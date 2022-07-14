@@ -163,8 +163,10 @@ hand_implemented = {
     "aten::_local_scalar_dense": MakeTorchFallback(),  # This function extracts a scalar value from
     #   a tensor with exactly one value; there's no need to try to do this on an ORT device.
     #   See CPU impl at pytorch/blob/master/aten/src/ATen/native/Scalar.cpp
-    "aten::gt.Scalar_out": MakeTorchFallback(),
-    "aten::lt.Scalar_out": MakeTorchFallback(),
+    "aten::lt.Scalar_out": Cast(Less(A="self", B="other"), to="GetONNXTensorProtoDataType(out.scalar_type())"),
+    "aten::lt.Tensor_out": Cast(Less(A="self", B="other"), to="GetONNXTensorProtoDataType(out.scalar_type())"),
+    "aten::gt.Scalar_out": Cast(Greater(A="self", B="other"), to="GetONNXTensorProtoDataType(out.scalar_type())"),
+    "aten::gt.Tensor_out": Cast(Greater(A="self", B="other"), to="GetONNXTensorProtoDataType(out.scalar_type())"),
     "aten::equal": SignatureOnly(),
     "aten::_softmax": Softmax("self", axis="dim"),
     "aten::argmax.out": SignatureOnly(),
