@@ -195,3 +195,5 @@ ops = {**ops, **hand_implemented}
 # resolve whether the op need type promotion.
 # Will remove this list in the future.
 type_promotion_ops = (*type_promotion_ops, "aten::gelu_backward")
+type_promotion_ops = (*type_promotion_ops, "aten::gt.Tensor_out")
+type_promotion_ops = (*type_promotion_ops, "aten::lt.Tensor_out")

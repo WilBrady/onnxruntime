@@ -398,7 +398,6 @@ class OrtOpTests(unittest.TestCase):
         ort_b = cpu_b.to(device)
 
         for tensor_type in {torch.float, torch.bool}:
-            print(f"Testing {math_sign_ops} with type {tensor_type}")
             cpu_out_tensor = torch.tensor([], dtype=tensor_type)
             ort_out_tensor = cpu_out_tensor.to(device)
             cpu_a_b_result = eval(
@@ -418,15 +417,13 @@ class OrtOpTests(unittest.TestCase):
         cpu_scalar_int_lt = torch.scalar_tensor(2, dtype=torch.int)
         cpu_scalar_int_gt = torch.scalar_tensor(0, dtype=torch.int)
         cpu_tensor_float = torch.tensor([1.1, 1.1], dtype=torch.float32)
-        cpu_scalar_float_lt = 1.0  # torch.scalar_tensor(1.0, dtype=torch.float32)
-        cpu_scalar_float_gt = 1.2  # torch.scalar_tensor(1.2, dtype=torch.float32)
+        float_lt = 1.0
+        float_gt = 1.2
 
         ort_tensor_int = cpu_tensor_int.to(device)
         ort_scalar_int_lt = cpu_scalar_int_lt.to(device)
         ort_scalar_int_gt = cpu_scalar_int_gt.to(device)
         ort_tensor_float = cpu_tensor_float.to(device)
-        ort_scalar_float_lt = cpu_scalar_float_lt  # cpu_scalar_float_lt.to(device)
-        ort_scalar_float_gt = cpu_scalar_float_gt  # cpu_scalar_float_gt.to(device)
 
         # compare int to int, float to float - ort only supports same type at the moment
         cpu_out_tensor = torch.tensor([], dtype=torch.bool)
@@ -441,10 +438,10 @@ class OrtOpTests(unittest.TestCase):
             compile("torch." + math_sign_ops + "(cpu_tensor_int, cpu_scalar_int_gt)", "<string>", "eval")
         )
         cpu_float_float_lt_result = eval(
-            compile("torch." + math_sign_ops + "(cpu_tensor_float, cpu_scalar_float_lt)", "<string>", "eval")
+            compile("torch." + math_sign_ops + "(cpu_tensor_float, float_lt)", "<string>", "eval")
         )
         cpu_float_float_gt_result = eval(
-            compile("torch." + math_sign_ops + "(cpu_tensor_float, cpu_scalar_float_gt)", "<string>", "eval")
+            compile("torch." + math_sign_ops + "(cpu_tensor_float, float_gt)", "<string>", "eval")
         )
 
         ort_int_int_result = eval(
@@ -456,10 +453,10 @@ class OrtOpTests(unittest.TestCase):
             compile("torch." + math_sign_ops + "(ort_tensor_int, ort_scalar_int_gt)", "<string>", "eval")
         )
         ort_float_float_result = eval(
-            compile("torch." + math_sign_ops + "(ort_tensor_float, ort_scalar_float_lt)", "<string>", "eval")
+            compile("torch." + math_sign_ops + "(ort_tensor_float, float_lt)", "<string>", "eval")
         )
         ort_float_float_not_result = eval(
-            compile("torch." + math_sign_ops + "(ort_tensor_float, ort_scalar_float_gt)", "<string>", "eval")
+            compile("torch." + math_sign_ops + "(ort_tensor_float, float_gt)", "<string>", "eval")
         )
 
         assert torch.equal(cpu_out_tensor, ort_out_tensor.to("cpu"))
