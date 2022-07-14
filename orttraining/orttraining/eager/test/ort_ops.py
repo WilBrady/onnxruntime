@@ -392,9 +392,9 @@ class OrtOpTests(unittest.TestCase):
     @parameterized.expand(math_sign_ops, name_func=rename_func)
     def test_op_tensor(self, math_sign_ops):
         device = self.get_device()
-        cpu_a = torch.Tensor([1.0, 1.5, 2.0])
+        cpu_a = torch.Tensor([1.0, 1.5, 2.0, 3.5])
         ort_a = cpu_a.to(device)
-        cpu_b = torch.Tensor([1.1, 1.4, 2.1])
+        cpu_b = torch.Tensor([1.0, 1.4, 2.1, 2.4])
         ort_b = cpu_b.to(device)
 
         for tensor_type in {torch.float, torch.bool}:
