@@ -47,7 +47,7 @@ ops = [
 # ["isinf",       ],
 # ["det"          ]]
 
-math_sign_ops = ["eq", "ne", "lt", "gt"]
+math_sign_ops = ["eq", "ne", "lt"]  # "gt"]
 
 # The function renames the test function: ops/math_sign_ops (e.g. abs)+ the test name(e.g. out), results in: test_abs_out
 def rename_func(testcase_func, param_num, param):

@@ -165,8 +165,8 @@ hand_implemented = {
     #   See CPU impl at pytorch/blob/master/aten/src/ATen/native/Scalar.cpp
     "aten::lt.Scalar_out": Cast(Less(A="self", B="other"), to="GetONNXTensorProtoDataType(out.scalar_type())"),
     "aten::lt.Tensor_out": Cast(Less(A="self", B="other"), to="GetONNXTensorProtoDataType(out.scalar_type())"),
-    "aten::gt.Scalar_out": Cast(Greater(A="self", B="other"), to="GetONNXTensorProtoDataType(out.scalar_type())"),
-    "aten::gt.Tensor_out": Cast(Greater(A="self", B="other"), to="GetONNXTensorProtoDataType(out.scalar_type())"),
+    # "aten::gt.Scalar_out": Cast(Greater(A="self", B="other"), to="GetONNXTensorProtoDataType(out.scalar_type())"),
+    # "aten::gt.Tensor_out": Cast(Greater(A="self", B="other"), to="GetONNXTensorProtoDataType(out.scalar_type())"),
     "aten::equal": SignatureOnly(),
     "aten::_softmax": Softmax("self", axis="dim"),
     "aten::argmax.out": SignatureOnly(),
@@ -196,4 +196,4 @@ ops = {**ops, **hand_implemented}
 # Will remove this list in the future.
 type_promotion_ops = (*type_promotion_ops, "aten::gelu_backward")
 type_promotion_ops = (*type_promotion_ops, "aten::gt.Tensor_out")
-type_promotion_ops = (*type_promotion_ops, "aten::lt.Tensor_out")
+# type_promotion_ops = (*type_promotion_ops, "aten::lt.Tensor_out")
