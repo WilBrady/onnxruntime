@@ -194,8 +194,8 @@ ops = {**ops, **hand_implemented}
 # Need to enhance the support for onnx type constrains to automatically
 # resolve whether the op need type promotion.
 # Will remove this list in the future.
-type_promotion_ops = (*type_promotion_ops, "aten::gelu_backward")
-type_promotion_ops = (*type_promotion_ops, "aten::gt.Tensor_out")
-type_promotion_ops = (*type_promotion_ops, "aten::lt.Tensor_out")
-type_promotion_ops = (*type_promotion_ops, "aten::eq.Tensor_out")
-type_promotion_ops = (*type_promotion_ops, "aten::ne.Tensor_out")
+type_promotion_ops.append("aten::gelu_backward")
+type_promotion_ops.append("aten::gt.Tensor_out")
+type_promotion_ops.append("aten::lt.Tensor_out")
+type_promotion_ops.append("aten::gt.Scalar_out")
+type_promotion_ops.append("aten::lt.Scalar_out")

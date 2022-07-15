@@ -163,6 +163,8 @@ class ORTGen:
             else:
                 writer.writeline(" {")
                 writer.push_indent()
+                if mapped_func.cpp_func.torch_func:
+                    writer.writeline(f'std::cout << "{mapped_func.cpp_func.torch_func.torch_schema}\\n";')
                 self._write_function_body(writer, mapped_func)
                 writer.pop_indent()
                 writer.writeline("}")
@@ -319,16 +321,19 @@ class ORTGen:
         if mapped_func.mapped_op_name in self.type_promotion_ops:
             types_from_tensor = []
             types_from_scalar = []
+            writer.writeline(f"// wilbrady1 {len(ctx.ops)}")
             for onnx_op_index, onnx_op in enumerate(ctx.ops):
+                writer.writeline(f"// wilbrady2 {onnx_op}")
                 for op_input in onnx_op.inputs:
                     if isinstance(op_input, Outputs):
                         continue
-                cpp_param = cpp_func.get_parameter(op_input)
-                if cpp_param:
-                    if cpp_param.parameter_type.desugar().identifier_tokens[0].value == "Tensor":
-                        types_from_tensor.append(f"{op_input}.scalar_type()")
-                    elif cpp_param.parameter_type.desugar().identifier_tokens[0].value == "Scalar":
-                        types_from_scalar.append(f"{op_input}.type()")
+                    cpp_param = cpp_func.get_parameter(op_input)
+                    writer.writeline(f"// wilbrady3 {cpp_param}")
+                    if cpp_param:
+                        if cpp_param.parameter_type.desugar().identifier_tokens[0].value == "Tensor":
+                            types_from_tensor.append(f"{op_input}.scalar_type()")
+                        elif cpp_param.parameter_type.desugar().identifier_tokens[0].value == "Scalar":
+                            types_from_scalar.append(f"{op_input}.type()")
             if len(types_from_tensor) > 0 or len(types_from_scalar) > 0:
                 need_type_promotion = True
                 writer.writeline(

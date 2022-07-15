@@ -503,6 +503,11 @@ class OrtOpTests(unittest.TestCase):
             # check result between nonzero.out and nonzero
             assert torch.equal(ort_result.to("cpu"), ort_out_tensor.to("cpu"))
 
+    def test_print(self):
+        x = torch.ones(1, 2)
+        ort_x = x.to("ort")
+        print(ort_x.cpu())
+
 
 if __name__ == "__main__":
     unittest.main()

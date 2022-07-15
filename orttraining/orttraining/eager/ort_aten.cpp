@@ -331,8 +331,14 @@ c10::optional<at::ScalarType> PromoteScalarTypesWithCategory(
   auto typeCategoryFromScalar = getTypeCategory(typeFromScalar.value());
 
   if (typeCategoryFromScalar > typeCategoryFromTensor) {
+    std::cout << "scalar type returned ";
+    //std::cout << typeFromScalar;
+    std::cout << "\n";
     return typeFromScalar;
   }
+  std::cout << "tensor type returned ";
+  //std::cout << typeFromTensor;
+  std::cout << "\n";
   return typeFromTensor;
 }
 
