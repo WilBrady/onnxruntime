@@ -82,7 +82,12 @@ class OrtOpTests(unittest.TestCase):
         device = self.get_device()
         cpu_ones = torch.Tensor([[1, 1, 1], [1, 1, 1], [1, 1, 1]])
         ort_ones = cpu_ones.to(device)
-        assert torch.allclose(torch.add(cpu_ones, cpu_ones, alpha=2.5), torch.add(ort_ones, ort_ones, alpha=2.5).cpu())
+        cpu_result = torch.add(cpu_ones, cpu_ones, alpha=2.5)
+        ort_result = torch.add(ort_ones, ort_ones, alpha=2.5)
+        print(cpu_result.dtype)
+        print(ort_result.dtype)
+
+        assert torch.allclose(cpu_result, ort_result.cpu())
 
     # the onnx operator Mul does not support type bool. The following test verifies cpu fall back works.
     def test_mul_bool(self):
@@ -504,9 +509,25 @@ class OrtOpTests(unittest.TestCase):
             assert torch.equal(ort_result.to("cpu"), ort_out_tensor.to("cpu"))
 
     def test_print(self):
-        x = torch.ones(1, 2)
+        x = torch.ones(1, 2, dtype=torch.double)
         ort_x = x.to("ort")
-        print(ort_x.cpu())
+        torch.gt(ort_x, 1.1)
+        print(ort_x)
+
+    def test_ceil_out(self):
+        device = self.get_device()
+        cpu_tensor = torch.rand(2, 2, dtype=torch.double)
+        ort_tensor = cpu_tensor.to(device)
+
+        # cpu_out_tensor = torch.tensor([], dtype=torch.double)
+        # ort_out_tensor = cpu_out_tensor.to(device)
+
+        cpu_result = torch.ceil(cpu_tensor)  # , out=cpu_out_tensor)
+        ort_result = torch.ceil(ort_tensor)  # , out=ort_out_tensor)
+
+        assert torch.allclose(cpu_result, ort_result.cpu(), equal_nan=True)
+        # assert torch.allclose(cpu_out_tensor, ort_out_tensor.cpu(), equal_nan=True)
+        # assert torch.allclose(ort_result.cpu(), ort_out_tensor.cpu(), equal_nan=True)
 
 
 if __name__ == "__main__":

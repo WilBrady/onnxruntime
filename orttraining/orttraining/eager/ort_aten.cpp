@@ -84,26 +84,40 @@ onnxruntime::MLDataType ort_scalar_type_from_aten(
 OrtValue create_ort_value(
   onnxruntime::ORTInvoker& invoker,
   const at::Scalar& scalar) {
-  return create_ort_value(invoker, scalar, at::kFloat);
+  return create_ort_value(invoker, scalar, scalar.type());
 }
 
 OrtValue create_ort_value(
   onnxruntime::ORTInvoker& invoker,
   const at::Scalar& scalar,
   at::ScalarType type) {
-  float val = scalar.toFloat();
+  std::cout << "scalar type: ";
+  std::cout << type;
+  std::cout << " \n";
   OrtValue ort_val;
   onnxruntime::Tensor::InitOrtValue(ort_scalar_type_from_aten(type), onnxruntime::TensorShape({}),
                                     invoker.GetCurrentExecutionProvider().GetAllocator(0, OrtMemTypeDefault), ort_val);
   auto* ort_tensor = ort_val.GetMutable<onnxruntime::Tensor>();
   switch (type) {
-    case at::ScalarType::Float:
+    case at::ScalarType::Float: {
+      float val = scalar.toFloat();
       CopyVectorToTensor<float>(invoker, &val, 1, *ort_tensor);
       break;
+    }
+    case at::ScalarType::Double: {
+      double val = scalar.toDouble();
+      CopyVectorToTensor<double>(invoker, &val, 1, *ort_tensor);
+      break;
+    }
     case at::ScalarType::BFloat16: {
       at::BFloat16 valBFloat16 = scalar.toBFloat16();
       Ort::BFloat16_t *valOrtBFloat16 = reinterpret_cast<Ort::BFloat16_t *>(&valBFloat16);
       CopyVectorToTensor<Ort::BFloat16_t>(invoker, valOrtBFloat16, 1, *ort_tensor);
+      break;
+    }
+    case at::ScalarType::Long: {
+      long val = scalar.toLong();
+      CopyVectorToTensor<long>(invoker, &val, 1, *ort_tensor);
       break;
     }
     default:
@@ -331,14 +345,8 @@ c10::optional<at::ScalarType> PromoteScalarTypesWithCategory(
   auto typeCategoryFromScalar = getTypeCategory(typeFromScalar.value());
 
   if (typeCategoryFromScalar > typeCategoryFromTensor) {
-    std::cout << "scalar type returned ";
-    //std::cout << typeFromScalar;
-    std::cout << "\n";
     return typeFromScalar;
   }
-  std::cout << "tensor type returned ";
-  //std::cout << typeFromTensor;
-  std::cout << "\n";
   return typeFromTensor;
 }
 
@@ -978,6 +986,116 @@ at::Tensor& nonzero_out(
   auto ort_input_out = create_ort_value(invoker, out);
   auto ort_temp = create_ort_value(invoker, temp);
   copy(invoker, ort_temp, ort_input_out);
+
+  return out;
+}
+
+/* // aten::gt.Scalar_out(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)
+at::Tensor& gt_Scalar_out(
+  const at::Tensor& self,
+  const at::Scalar& other,
+  // *,
+  at::Tensor& out) {
+  std::cout << "aten::gt.Scalar_out(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)\n";
+  ORT_LOG_FN(self, other, out);
+
+  if (
+    !IsSupportedType(self, {at::kByte,at::kInt,at::kDouble,at::kHalf,at::kShort,at::kFloat,at::kBFloat16,at::kLong}) ||
+    !IsSupportedType(other, {at::kByte,at::kInt,at::kDouble,at::kHalf,at::kShort,at::kFloat,at::kBFloat16,at::kLong})) {
+    return at::native::call_fallback_fn<
+      &at::native::cpu_fallback,
+      ATEN_OP(gt_Scalar_out)>::call(self, other, out);
+  }
+  auto& invoker = GetORTInvoker(self.device());
+
+  auto promoted_type = PromoteScalarTypesWithCategory({self.scalar_type()}, {other.type()});
+
+  // resize the output and then create output ort value to be updated.
+  resize_output(invoker, dynamic_cast<ORTTensorImpl*>(out.unsafeGetTensorImpl()), self.sizes());
+  auto ort_input_out = create_ort_value(invoker, out);
+
+  std::cout << "types before casting ";
+  auto ort_input_0_self = create_ort_value(invoker, self);
+  std::cout << ort_input_0_self.Type();
+
+  if (self.scalar_type() != *promoted_type){
+    ort_input_0_self = CastToType(invoker, ort_input_0_self, *promoted_type);
+  }
+  auto ort_input_0_other = create_ort_value(invoker, other, other.type());
+  std::cout << ort_input_0_other.Type();
+  std::cout << "\n";
+  if (other.type() != *promoted_type){
+    ort_input_0_other = CastToType(invoker, ort_input_0_other, *promoted_type);
+  }
+
+  std::cout << "types after casting ";
+  std::cout << ort_input_0_self.Type();
+  std::cout << ort_input_0_other.Type();
+  std::cout << "\n";
+
+  std::vector<OrtValue> ort_outputs_0_Greater(1);
+
+  auto status = invoker.Invoke("Greater", {
+    std::move(ort_input_0_self),
+    std::move(ort_input_0_other),
+  }, ort_outputs_0_Greater, nullptr);
+  if (!status.IsOK())
+    throw std::runtime_error(
+      "ORT return failure status:" + status.ErrorMessage());
+
+
+
+  NodeAttributes attrs_1(1);
+  attrs_1["to"] = create_ort_attribute(
+    "to", GetONNXTensorProtoDataType(out.scalar_type()), at::ScalarType::Int);
+
+  std::vector<OrtValue> ort_outputs_1_Cast(1);
+  ort_outputs_1_Cast[0] = ort_input_out;
+
+  status = invoker.Invoke("Cast", {
+    std::move(ort_outputs_0_Greater[0]),
+  }, ort_outputs_1_Cast, &attrs_1);
+  if (!status.IsOK())
+    throw std::runtime_error(
+      "ORT return failure status:" + status.ErrorMessage());
+
+
+  return out;
+} */
+
+// aten::ceil.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)
+at::Tensor& ceil_out(
+  const at::Tensor& self,
+  // *,
+  at::Tensor& out) {
+  std::cout << "aten::ceil.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)\n";
+  ORT_LOG_FN(self, out);
+
+  if (
+    !IsSupportedType(self, {at::kHalf,at::kBFloat16,at::kDouble,at::kFloat})) { //at::kDouble,
+    return at::native::call_fallback_fn<
+      &at::native::cpu_fallback,
+      ATEN_OP(ceil_out)>::call(self, out);
+  }
+  auto& invoker = GetORTInvoker(self.device());
+
+  // resize the output and then create output ort value to be updated.
+  resize_output(invoker, dynamic_cast<ORTTensorImpl*>(out.unsafeGetTensorImpl()), self.sizes());
+  auto ort_input_out = create_ort_value(invoker, out);
+
+  auto ort_input_0_self = create_ort_value(invoker, self);
+
+  std::vector<OrtValue> ort_outputs_0_Ceil(1);
+  ort_outputs_0_Ceil[0] = ort_input_out;
+
+  auto status = invoker.Invoke("Ceil", {
+    std::move(ort_input_0_self),
+  }, ort_outputs_0_Ceil, nullptr);
+
+  if (!status.IsOK())
+    throw std::runtime_error(
+      "ORT return failure status:" + status.ErrorMessage());
+
 
   return out;
 }

@@ -57,7 +57,6 @@ unary_ops_with_out = [
     "asinh",
     "atan",
     "atanh",
-    "ceil",
     "cos",
     "cosh",
     "erf",
@@ -124,6 +123,7 @@ for unary_op in unary_ops:
 # ---------------------------
 
 hand_implemented = {
+    "aten::ceil.out": SignatureOnly(),
     "aten::empty.memory_format": SignatureOnly(),
     "aten::empty_strided": SignatureOnly(),
     "aten::zero_": SignatureOnly(),
@@ -197,5 +197,9 @@ ops = {**ops, **hand_implemented}
 type_promotion_ops.append("aten::gelu_backward")
 type_promotion_ops.append("aten::gt.Tensor_out")
 type_promotion_ops.append("aten::lt.Tensor_out")
+type_promotion_ops.append("aten::ne.Tensor_out")
+type_promotion_ops.append("aten::eq.Tensor_out")
 type_promotion_ops.append("aten::gt.Scalar_out")
 type_promotion_ops.append("aten::lt.Scalar_out")
+type_promotion_ops.append("aten::ne.Scalar_out")
+type_promotion_ops.append("aten::eq.Scalar_out")
